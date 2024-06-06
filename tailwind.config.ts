@@ -6,6 +6,7 @@ export default {
     extend: {
       fontFamily: {
         paragraph: ['Cactus Classical Serif', 'serif'],
+        title: ['Lora', 'serif'],
       },
     },
   },

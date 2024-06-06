@@ -1,3 +1,21 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    p {
+        @apply font-paragraph;
+    }
+
+    h1 {
+        @apply text-7xl;
+        @apply font-bold;
+        @apply font-title;
+    }
+
+    hr {
+        @apply w-1/6;
+        @apply my-4;
+        @apply border-gray-700;
+    }
+}
