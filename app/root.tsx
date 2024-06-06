@@ -1,15 +1,19 @@
-import {
-  Links,
-  Meta,
-  Outlet,
-  Scripts,
-  ScrollRestoration,
-} from "@remix-run/react";
-import stylesheet from "~/tailwind.css?url";
+import { Links, Meta, Outlet, Scripts, ScrollRestoration } from '@remix-run/react';
+import stylesheet from '~/tailwind.css?url';
 import { LinksFunction } from '@remix-run/node';
 
 export const links: LinksFunction = () => [
-  { rel: "stylesheet", href: stylesheet },
+  { rel: 'stylesheet', href: stylesheet },
+  { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+  { rel: 'preconnect', href: 'https://fonts.gstatic.com' },
+  {
+    rel: 'stylesheet',
+    href: 'https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap',
+  },
+  {
+    rel: 'stylesheet',
+    href: 'https://fonts.googleapis.com/css2?family=Cactus+Classical+Serif&display=swap',
+  },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {

@@ -21,6 +21,9 @@
     "aws-lambda": "^1.0.7",
     "esbuild": "^0.21.4",
     "isbot": "^4.1.0",
+    "prettier": "^3.3.1",
+    "prettier-plugin-classnames": "^0.6.6",
+    "prettier-plugin-tailwindcss": "^0.6.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
