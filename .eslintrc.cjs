@@ -48,6 +48,9 @@ module.exports = {
           typescript: {},
         },
       },
+      rules: {
+        "react/jsx-curly-brace-presence": ["error", { "props": "never", "children": "never" }]
+      }
     },
 
     // Typescript
