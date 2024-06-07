@@ -1,8 +1,141 @@
-<h1>Deploy Remix on AWS with Pulumi</h1>
+<h1>Deploying Remix-Vite on Lambda using Pulumi</h1>
+<br/>
 <hr/>
-<p>In this article, we will learn how to deploy a Remix app on AWS using Pulumi.</p>
+<h2>A bit of context</h2>
+<br />
+<p>
+Remix is a very cool React-based framework that makes the final jump back from the browser to the server. After
+starting with SPAs that fully ran in the browser, Next.js got the idea of rendering react components in the server,
+reducing the initial load time and improving crawlability.
+<br/>
+Remix takes this a step further : while
+Next.js cannot load dynamic content on the server, Remix can. As a user, this means even faster loadings times for
+any kind of dynamic content, and as a developer, you don't need to think about server-side vs client-side components.
+You just write react code, and it works.
+</p>
+<br/>
+<hr/>
+<h2>Deploying Remix</h2>
+<br />
+<p>
+Let's create a Remix project, build it, and see what we get.
+</p>
 <pre class="copy-to-clipboard">
-<code class="language-bash">npm install -g @pulumi/cli
-pulumi login
-pulumi up</code>
+<code class="language-bash">npx create-remix@latest remix-aws-tutorial -y
+cd remix-aws-tutorial
+npm run build</code>
 </pre>
+<p>The build directory now has the following content :</p>
+<pre><code class="language-none">  ├── client
+  │   ├── assets
+  │   │   ├── _index-B17S9f7F.js
+  │   │   ├── components-BAmE7OwT.js
+  │   │   ├── entry.client-jPehgn16.js
+  │   │   ├── jsx-runtime-56DGgGmo.js
+  │   │   ├── manifest-3ad53534.js
+  │   │   └── root-LChrk_Sm.js
+  │   └── favicon.ico
+  └── server
+      └── index.js</code></pre>
+<p>The server directory contains a single file with all the server code. It is capable of understanding everything about
+  an HTTP request, loading the right data, and sending an HTML document back to the client.</p>
+<p>The client directory contains all the static assets that the client needs to load after
+  receiving initial HTML response.</p>
+<br/>
+<p>Now, in order to deploy our Remix application, we can start to understand what we're going to need:</p>
+<ul>
+  <li>Something to host and serve the static assets</li>
+  <li>A way to run the server</li>
+  <li>A way to send HTTP requests to the server and transmit the response to the client</li>
+</ul>
+<br/>
+<hr/>
+<h2>Understanding the architecture</h2>
+<br/>
+<p>Fortunately for us, our requirements map neatly to a simple serverless architecture hosted on AWS.</p>
+<ul>
+  <li>S3 is a great service for hosting and serving static assets</li>
+  <li>Lambda functions can run our server code</li>
+  <li>API Gateway handles HTTP requests and can forward them to Lambda</li>
+  <li>CloudFront can map between S3 and API Gateway, and provides caching and other features</li>
+</ul>
+<br/>
+<p>Visually, the architecture looks like this:</p>
+<img src="/images/deployRemixArchitecture.png" alt="Remix architecture" />
+<br/>
+<p></p>
+<hr/>
+<h2>Creating a working server bundle</h2>
+<br/>
+<p>
+When Remix is built, it creates a single index.js file that contains all the server code. the resulting handler
+is built using the
+<a href="https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API">Fetch API</a>, which is not directly
+compatible with the payload format of API Gateway.
+</p>
+<p>In order to make it compatible, we need an adapter. There is an officially maintained adapter that is compatible
+with API Gateway HTTP, called @remix-run/architect. Let's install it.</p>
+<pre><code class="language-bash">npm install @remix-run/architect</code></pre>
+<p>Now, let's create a server.ts file that will be our entry point for the server.</p>
+<pre><code class="language-typescript">import { createRequestHandler } from '@remix-run/architect';
+import * as build from './build/server/index.js';
+
+export const handler  = createRequestHandler({
+  build,
+});</code></pre>
+<p>Additionally, API Gateway forwards the stage name inside the raw path, so we need to update the adapter code to
+remove the stage name before calling the remix handler. We're going to assume that the stage name is "dev" for now,
+but you can change it to whatever you want. We also need to install aws-lambda types for the handler signature.</p>
+<pre><code class="language-bash">npm install -D aws-lambda</code></pre>
+<p>Update server.ts to remove the stage name:</p>
+<pre><code class="language-typescript">import { createRequestHandler } from '@remix-run/architect';
+import * as build from './build/server/index.js';
+import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
+
+const requestHandler = createRequestHandler({
+  build,
+});
+
+export const handler = (...args: Parameters&lt;APIGatewayProxyHandlerV2&gt;) => {
+  const [apiGatewayEvent, ...rest] = args;
+  apiGatewayEvent.rawPath = apiGatewayEvent.rawPath.replace(/^\/dev/, '');
+  apiGatewayEvent.requestContext.http.path = apiGatewayEvent.requestContext.http.path.replace(/^\/dev/, '');
+
+  return requestHandler(apiGatewayEvent, ...rest);
+};</code></pre>
+<p>Finally, we are ready to bundle our lambda function into a single file.
+Let's install esbuild:</p>
+<pre><code class="language-bash">npm install esbuild</code></pre>
+<p>And create a build.cjs file to configure the build process:</p>
+<pre><code class="language-javascript">const esbuild = require('esbuild');
+
+esbuild
+  .build({
+    entryPoints: ['server.ts'],
+    bundle: true, // Bundle all dependencies into one file
+    platform: 'node',
+    target: 'node20',
+    external: ['node:stream'], // Keep Node.js built-ins external
+    outfile: 'build/lambda/index.cjs',
+    sourcemap: true,
+    format: 'cjs',
+  })
+  .catch(() => process.exit(1));</code></pre>
+<p>We finally need to install architect dependencies for the build to work:</p>
+<pre><code class="language-bash">npm install -D @aws-sdk/client-apigatewaymanagementapi @aws-sdk/client-dynamodb @aws-sdk/client-sns @aws-sdk/client-sqs @aws-sdk/client-ssm @aws-sdk/lib-dynamodb</code></pre>
+<p>Now, we can build our lambda function:</p>
+<pre><code class="language-bash">node build.cjs</code></pre>
+<p>The build directory now contains a lambda/index.cjs file, with the whole code of our server!</p>
+<br/>
+<hr/>
+<h2>Declaring the infrastructure using Pulumi</h2>
+<h3>Create an S3 bucket for the static assets</h3>
+<h3>Create a lambda function for the server</h3>
+<h3>Create an API Gateway for the server</h3>
+<h3>Create a CloudFront</h3>
+<h4>Set up the S3 Origin</h4>
+<h4>Set up the API Gateway Custom Origin</h4>
+<hr/>
+<h2>Wrap it all up</h2>
+<hr/>
+<h2>Further improvements</h2>
