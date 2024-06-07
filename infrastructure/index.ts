@@ -119,6 +119,18 @@ const cachingOptimizedPolicyId = '658327ea-f89d-4fab-a63d-7e88639e58f6';
 const allVieverExceptHostHeaderPolicyId = 'b689b0a8-53d0-40ab-baf2-68738e2966ac';
 const s3cachingPolicyId = stack === 'prod' ? cachingOptimizedPolicyId : cachingDisabledPolicyId;
 
+function getS3OriginCacheBehavior({ pathPattern }: { pathPattern: string }) {
+  return {
+    pathPattern,
+    allowedMethods: ['GET', 'HEAD'],
+    cachedMethods: ['GET', 'HEAD'],
+    compress: true,
+    cachePolicyId: s3cachingPolicyId,
+    targetOriginId: 'S3Origin',
+    viewerProtocolPolicy: 'redirect-to-https',
+  };
+}
+
 const distribution = new aws.cloudfront.Distribution('distribution', {
   enabled: true,
   httpVersion: 'http2',
@@ -151,24 +163,9 @@ const distribution = new aws.cloudfront.Distribution('distribution', {
     viewerProtocolPolicy: 'redirect-to-https',
   },
   orderedCacheBehaviors: [
-    {
-      pathPattern: '/favicon.ico',
-      allowedMethods: ['GET', 'HEAD'],
-      cachedMethods: ['GET', 'HEAD'],
-      compress: true,
-      cachePolicyId: s3cachingPolicyId,
-      targetOriginId: 'S3Origin',
-      viewerProtocolPolicy: 'redirect-to-https',
-    },
-    {
-      pathPattern: '/assets/*',
-      allowedMethods: ['GET', 'HEAD'],
-      cachedMethods: ['GET', 'HEAD'],
-      compress: true,
-      cachePolicyId: s3cachingPolicyId,
-      targetOriginId: 'S3Origin',
-      viewerProtocolPolicy: 'redirect-to-https',
-    },
+    getS3OriginCacheBehavior({ pathPattern: '/favicon.ico' }),
+    getS3OriginCacheBehavior({ pathPattern: '/assets/*' }),
+    getS3OriginCacheBehavior({ pathPattern: '/images/*' }),
   ],
   restrictions: {
     geoRestriction: {
