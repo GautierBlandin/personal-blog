@@ -42,4 +42,20 @@
         @apply my-4;
         @apply border-gray-700;
     }
+
+    ul {
+        @apply list-disc list-inside;
+    }
+
+    li {
+        @apply font-paragraph;
+    }
+
+    a {
+        @apply text-blue-500;
+    }
+
+    a:hover {
+        @apply underline;
+    }
 }
