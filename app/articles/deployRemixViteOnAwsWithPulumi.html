@@ -5,13 +5,13 @@
 <br/>
 <p>
 <a href="https://remix.run/">Remix</a> is a very cool React-based framework that makes the final jump back from the browser to the server. After
-starting with SPAs that fully ran in the browser, <a href ="https://nextjs.org/">Next.js</a> got the idea of rendering react components in the server,
+starting with SPAs that fully ran in the browser, <a href ="https://nextjs.org/">Next.js</a> got the idea of rendering React components in the server,
 reducing the initial load time and improving crawlability.
 <br/>
 Remix takes this a step further: while
 Next.js cannot load dynamic content on the server, Remix can. As a user, this means even faster loadings times for
 any kind of dynamic content, and as a developer, you don't need to think about server-side vs client-side components.
-You just write react code, and it works.
+You just write React code, and it works.
 </p>
 <br/>
 <hr/>
@@ -517,13 +517,13 @@ dynamic behavior yet, but everything does load this time around!</p>
 <br/>
 <p>
   <a href="https://remix.run/">Remix</a> is a very cool React-based framework that makes the final jump back from the browser to the server. After
-  starting with SPAs that fully ran in the browser, <a href ="https://nextjs.org/">Next.js</a> got the idea of rendering react components in the server,
+  starting with SPAs that fully ran in the browser, <a href ="https://nextjs.org/">Next.js</a> got the idea of rendering React components in the server,
   reducing the initial load time and improving crawlability.
   <br/>
   Remix takes this a step further: while
   Next.js cannot load dynamic content on the server, Remix can. As a user, this means even faster loadings times for
   any kind of dynamic content, and as a developer, you don't need to think about server-side vs client-side components.
-  You just write react code, and it works.
+  You just write React code, and it works.
 </p>
 <br/>
 <hr/>
@@ -633,7 +633,7 @@ esbuild
     format: 'cjs',
   })
   .catch(() => process.exit(1));</code></pre>
-<p>We finally need to install architect dependencies for the build to work:</p>
+<p>Finally, we need to install architect dependencies for the build process to work:</p>
 <pre class="copy-to-clipboard"><code class="language-bash">npm install -D @aws-sdk/client-apigatewaymanagementapi @aws-sdk/client-dynamodb @aws-sdk/client-sns @aws-sdk/client-sqs @aws-sdk/client-ssm @aws-sdk/lib-dynamodb</code></pre>
 <p>Now, we can build our lambda function:</p>
 <pre class="copy-to-clipboard"><code class="language-bash">node build.cjs</code></pre>
@@ -712,7 +712,7 @@ new synced.S3BucketFolder(
 </code></pre>
 <p>Now let's deploy our infrastructure:</p>
 <pre class="copy-to-clipboard"><code class="language-bash">pulumi up</code></pre>
-<p>Once the deployment is done, we can see the S3 bucket will all the client content from the AWS console.</p>
+<p>Once the deployment is done, we can see the S3 bucket with all the client content from the AWS console.</p>
 <p>Let's make our server now!</p>
 <br/>
 <hr/>
