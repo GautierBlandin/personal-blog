@@ -1,7 +1,7 @@
 <h1>Deploying Remix-Vite on Lambda using Pulumi</h1>
 <br/>
 <hr/>
-<h2>A bit of context</h2>
+<h2 id="a-bit-of-context">A bit of context</h2>
 <br/>
 <p>
 <a href="https://remix.run/">Remix</a> is a very cool React-based framework that makes the final jump back from the browser to the server. After
@@ -15,7 +15,7 @@ You just write React code, and it works.
 </p>
 <br/>
 <hr/>
-<h2>Deploying Remix</h2>
+<h2 id="deploying-remix">Deploying Remix</h2>
 <br/>
 <p>
 Let's create a Remix project, build it, and see what we get.
@@ -48,7 +48,7 @@ npm run build</code>
 </ul>
 <br/>
 <hr/>
-<h2>Understanding the architecture</h2>
+<h2 id="understanding-the-architecture">Understanding the architecture</h2>
 <br/>
 <p>Fortunately for us, our requirements map neatly to a simple serverless architecture hosted on AWS.</p>
 <ul>
@@ -63,7 +63,7 @@ npm run build</code>
 <br/>
 <p></p>
 <hr/>
-<h2>Creating a working server bundle</h2>
+<h2 id="creating-a-working-server-bundle">Creating a working server bundle</h2>
 <br/>
 <p>
 When Remix is built, it creates a single index.js file that contains all the server code, with a handler
@@ -126,7 +126,7 @@ esbuild
 <p>The build directory now contains a lambda/index.cjs file, with the whole code of our server, ready to be deployed!</p>
 <br/>
 <hr/>
-<h2>Declaring the infrastructure</h2>
+<h2 id="declaring-the-infrastructure">Declaring the infrastructure</h2>
 <br/>
 <h3>Setting up Pulumi</h3>
 <br/>
@@ -503,7 +503,7 @@ dynamic behavior yet, but everything does load this time around!</p>
 }</code></pre>
 <br/>
 <hr/>
-<h2>Recap and next steps</h2>
+<h2 id="recap-and-next-steps">Recap and next steps</h2>
 <br/>
 <p>In this article, we've learned how to:</p>
 <ul>
@@ -524,7 +524,7 @@ dynamic behavior yet, but everything does load this time around!</p>
 <p>The full code that results from this article is available at <a href="https://github.com/gautierblandin/remix-lambda-starter">https://github.com/gautierblandin/remix-lambda-starter</a>.</p>
 <br/>
 <hr/>
-<h2>Further improvements</h2>
+<h2 id="further-improvements">Further improvements</h2>
 <br/>
 <p>When bundling the server, we've had to use esbuild. I have tried for a few hours to make it work using
   Vite directly, but no amount of tinkering with rollup plugins made it work. If you manage to make it work using
