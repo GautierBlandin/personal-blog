@@ -6,7 +6,7 @@ import articleContent from '../articles/deployRemixViteOnAwsWithPulumi.html?raw'
 
 export const meta: MetaFunction = () => {
   return [
-    { title: 'Gautier Blandin - Software Engineer' },
+    { title: 'Gautier Blandin - A blog about Software' },
     { name: 'description', content: 'A blog about software engineering' },
   ];
 };
