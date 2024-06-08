@@ -17,7 +17,7 @@ export default function Index() {
   }, []);
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-3xl mx-auto mb-12">
       <div className="mt-12">
         <Article content={articleContent} />
       </div>
