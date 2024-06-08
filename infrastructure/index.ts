@@ -199,4 +199,4 @@ new aws.s3.BucketPolicy('allowCloudFrontBucketPolicy', {
   },
 });
 
-export const distributionDomain = pulumi.interpolate`${distribution.domainName}`;
+export const distributionAddress = pulumi.interpolate`https://${distribution.domainName}`;
