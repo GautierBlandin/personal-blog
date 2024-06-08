@@ -40,13 +40,11 @@ npm run build</code>
 <p>The server directory contains a single file with all the server code. It is capable of understanding everything about
   an HTTP request, loading the right data, and sending an HTML document back to the client.</p>
 <p>The client directory contains all the static assets that the client needs to load after
-  receiving the initial HTML response.</p>
-<br/>
-<p>Now, in order to deploy our Remix application, we can start to understand what we're going to need:</p>
+  receiving the initial HTML response.</p><p> In order to deploy our Remix application, we can start to understand what we're going to need:</p>
 <ul>
   <li>Something to host and serve the static assets</li>
   <li>A way to run the server</li>
-  <li>A way to send HTTP requests to the server and transmit the response to the client</li>
+  <li>A way to send HTTP requests to the server and transmit the responses to the client</li>
 </ul>
 <br/>
 <hr/>
@@ -57,10 +55,10 @@ npm run build</code>
   <li>S3 is a great service for hosting and serving static assets</li>
   <li>Lambda functions can run our server code</li>
   <li>API Gateway handles HTTP requests and can forward them to Lambda</li>
-  <li>CloudFront can map between S3 and API Gateway, and provides caching and other features</li>
+  <li>CloudFront can map between S3 and API Gateway, and provides caching and other CDN features</li>
 </ul>
 <br/>
-<p>Visually, the architecture looks like this:</p>
+<p>Visually, the architecture we're going to implement looks like this:</p>
 <img src="/images/deployRemixArchitecture.png" alt="Remix architecture" />
 <br/>
 <p></p>
@@ -69,7 +67,7 @@ npm run build</code>
 <br/>
 <p>
 When Remix is built, it creates a single index.js file that contains all the server code, with a handler
-built using the
+using the
 <a href="https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API">Fetch API</a>, which is not directly
 compatible with the payload format of API Gateway.
 </p>
@@ -83,9 +81,9 @@ import * as build from './build/server/index.js';
 export const handler  = createRequestHandler({
   build,
 });</code></pre>
-<p>Additionally, API Gateway forwards the stage name inside the raw path, so we need to update the adapter code to
-remove the stage name before calling the remix handler. We're going to assume that the stage name is "dev" for now,
-but you can change it to whatever you want. We also need to install aws-lambda types for the handler signature.</p>
+<p>Additionally, API Gateway forwards the stage name inside the request path, so we need to update the adapter code to
+remove the stage name before calling the remix handler. We're going to assume that the stage name is "dev",
+but you can change it to whatever you want. We also need to install aws-lambda types for the handler signature:</p>
 <pre class="copy-to-clipboard"><code class="language-bash">npm install -D aws-lambda</code></pre>
 <p>Update server.ts to remove the stage name at runtime:</p>
 <pre class="copy-to-clipboard"><code class="language-typescript">import { createRequestHandler } from '@remix-run/architect';
@@ -133,19 +131,19 @@ esbuild
 <h3>Setting up Pulumi</h3>
 <br/>
 <p>Pulumi is an Infrastructure-as-Code (IaC) tool that enables us to write infrastructure code directly in typescript. It supports multiple cloud providers,
-  and does not rely on CloudFormation templates, instead directly using the CLI under the hood. If you wish to use a different
+  and does not rely on CloudFormation templates, instead directly using the AWS CLI under the hood. If you wish to use a different
   IaC tool for this section, anything supporting AWS will work, you'll simply need to adapt the resource declarations.</p>
 <br/>
 <p> First, we'll need to <a href="https://www.pulumi.com/docs/install/">install the Pulumi CLI</a>.</p>
 <br/>
-<p> Let's create an infrastructure directory, and initialize a Pulumi project:</p>
+<p> Once that is done, let's create an infrastructure directory, and initialize a Pulumi project:</p>
 <pre class="copy-to-clipboard"><code class="language-bash">mkdir infrastructure
 cd infrastructure
 pulumi new aws-typescript</code></pre>
-<p>We need to configure our AWS credentials to be able to deploy our infrastructure:</p>
+<p>We also need to configure our AWS credentials to be able to deploy our infrastructure:</p>
 <pre class="copy-to-clipboard"><code class="language-bash">pulumi config set aws:accessKey &lt;your-access-key&gt;
 pulumi config set aws:secretKey &lt;your-secret-key&gt; --secret</code></pre>
-<p>Finally, we need to login to the Pulumi CLI to deploy using the Pulumi engine:</p>
+<p>Finally, we need to login to the Pulumi CLI so that we can deploy using the Pulumi engine:</p>
 <pre class="copy-to-clipboard"><code class="language-bash">pulumi login</code></pre>
 <p>With everything set up, we can proceed to write the infrastructure code.</p>
 <br/>
@@ -200,7 +198,7 @@ new synced.S3BucketFolder(
 </code></pre>
 <p>Now, let's deploy our infrastructure:</p>
 <pre class="copy-to-clipboard"><code class="language-bash">pulumi up</code></pre>
-<p>Once the deployment is done, we can see the S3 bucket with all the client content from the AWS console.</p>
+<p>Once the deployment is done, by logging into the AWS console, we can see the S3 bucket with all the build/client content.</p>
 <p>Let's make our server now!</p>
 <br/>
 <hr/>
@@ -249,10 +247,10 @@ const lambda = new aws.lambda.Function('lambdaFunction', {
 export const lambdaArn = lambda.arn;
 </code></pre>
 
-  If you want, you can deploy and test your lambda function to test it manually.
-  <pre class="copy-to-clipboard"><code class="language-bash">pulumi up</code></pre>
-  <p>Once the deployment is done, you can test your lambda function by calling it from the AWS console with the
-    following mock payload:</p>
+<p>If you want, you can deploy and test your lambda function to test it manually.</p>
+<pre class="copy-to-clipboard"><code class="language-bash">pulumi up</code></pre>
+<p>Once the deployment is done, you can test your lambda function by calling it from the AWS console with the
+  following mock payload:</p>
   <pre class="copy-to-clipboard"><code class="language-json">{
   "version": "2.0",
   "routeKey": "$default",
@@ -290,7 +288,7 @@ export const lambdaArn = lambda.arn;
     "stageVariable2": "value2"
   }
 }</code></pre>
-<p>You should get a 200 response with an html body.</p>
+<p>You should get a status 200 response with an html body.</p>
 <br/>
 <hr/>
 <h3>Creating an API Gateway for the server</h3>
@@ -303,9 +301,10 @@ export const lambdaArn = lambda.arn;
   <li>A route</li>
   <li>An API Stage</li>
 </ul>
+<p>Let's write this, continuing to expand index.ts:</p>
 <pre class="copy-to-clipboard"><code class="language-typescript">// It's preferable to move this const to the top of the file
-// If you've decided to use something else than dev for the stack name, make
-// sure to update the server.ts code accordingly
+// If you've decided to use something else than dev for the stack/stage name,
+// make sure to update the server.ts code accordingly
 const stack = pulumi.getStack();
 
 const apigw = new aws.apigatewayv2.Api('httpApiGateway', {
@@ -365,8 +364,8 @@ export const httpApiEndpoint = pulumi.interpolate`${apigw.apiEndpoint}/${stage.n
 <p>
   CloudFront distributions are made of two main components: origins, and behaviors.
 </p>
-<p>Origins are the resources served by the distributions. In our case, it's going to be the S3 bucket
-that we configure previously, and the API Gateway that links to our lambda server.</p>
+<p>Origins are the sources of content served by the distribution. In our case, it's going to be the S3 bucket
+that we configure previously, and the API Gateway that links to our lambda function.</p>
 <p>Behaviors define the rules that apply to the requests coming to the distribution, including routing
 between origins, and caching behavior.</p>
 <br/>
@@ -379,21 +378,22 @@ between origins, and caching behavior.</p>
   <li>A behavior for the /favicon.ico route</li>
   <li>A behavior for the /assets/* route</li>
   <li>An origin access control to allow CloudFront to access the S3 bucket</li>
-  <li>A resource policy on the S3 bucket to allow CloudFront to access the bucket</li>
+  <li>A resource policy on the S3 bucket to allow CloudFront to access the S3 bucket</li>
 </ul>
 <br/>
 <p>Let's create all of this:</p>
 <pre class="copy-to-clipboard"><code class="language-typescript">// Add the import at the top of the file
 import * as url from 'url';
 
+// These uuids are defined by AWS, you can find them in the CloudFormation documentation
 const cachingDisabledPolicyId = '4135ea2d-6df8-44a3-9df3-4b5a84be39ad';
 const cachingOptimizedPolicyId = '658327ea-f89d-4fab-a63d-7e88639e58f6';
 const allVieverExceptHostHeaderPolicyId = 'b689b0a8-53d0-40ab-baf2-68738e2966ac';
 
 const cloudfrontOAC = new aws.cloudfront.OriginAccessControl('cloudfrontOAC', {
   originAccessControlOriginType: 's3',
-  signingBehavior: 'always', // always override authroization header
-  signingProtocol: 'sigv4', // only allowed value
+  signingBehavior: 'always',
+  signingProtocol: 'sigv4',
 });
 
 const distribution = new aws.cloudfront.Distribution('distribution', {
@@ -491,6 +491,17 @@ dynamic behavior yet, but everything does load this time around!</p>
 <br/>
 <img src="/images/workingCloudFrontEndpoint.png" alt="Working CloudFront endpoint" />
 <br/>
+<p>We now have a working Remix application hosted on AWS. If we update anything, we have a simple, three-steps deploy process:</p>
+<ul>
+  <li>Build the Remix application: <pre><code class="language-bash">npx remix vite:build</code></pre></li>
+  <li>Bundle it using esbuild: <pre><code class="language-bash">node build.cjs</code></pre></li>
+  <li>Deploy the infrastructure: <pre><code class="language-bash">pulumi up</code></pre></li>
+</ul>
+<p>I recommend encapsulating this in a single build-deploy script:</p>
+<pre class="copy-to-clipboard"><code class="language-json">"scripts": {
+    "build-deploy": "remix vite:build && node build.cjs && cd infrastructure && pulumi up"
+}</code></pre>
+<br/>
 <hr/>
 <h2>Recap and next steps</h2>
 <br/>
@@ -506,11 +517,13 @@ dynamic behavior yet, but everything does load this time around!</p>
   <li>Add some styling to the application. I recommend using Tailwind, which is very easy to
     <a href="https://tailwindcss.com/docs/guides/remix">install on Remix.</a></li>
   <li>Add a custom domain using Route53</li>
+  <li>Create a prod stage in Pulumi</li>
   <li>Build an app you'll be proud of!</li>
 </ul>
 <br/>
 <hr/>
 <h2>Further improvements</h2>
+<br/>
 <p>When bundling the server, we've had to use esbuild. I have tried for a few hours to make it work using
   Vite directly, but no amount of tinkering with rollup plugins made it work. If you manage to make it work using
   Vite, please let me know! I'm reachable at
