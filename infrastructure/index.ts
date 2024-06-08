@@ -106,7 +106,7 @@ const stage = new aws.apigatewayv2.Stage('apiStage', {
   autoDeploy: true,
 });
 
-const httpApiEndpoint = pulumi.interpolate`${apigw.apiEndpoint}/${stage.name}`;
+export const httpApiEndpoint = pulumi.interpolate`${apigw.apiEndpoint}/${stage.name}`;
 
 const cloudfrontOAC = new aws.cloudfront.OriginAccessControl('cloudfrontOAC', {
   originAccessControlOriginType: 's3',
