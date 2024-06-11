@@ -1,8 +1,7 @@
 import type { MetaFunction } from '@remix-run/node';
 import Prism from 'prismjs';
 import { useEffect } from 'react';
-import { Article } from '@components';
-import articleContent from '../articles/deployRemixViteOnAwsWithPulumi.html?raw';
+import { Outlet } from '@remix-run/react';
 
 export const meta: MetaFunction = () => {
   return [
@@ -19,7 +18,7 @@ export default function Index() {
   return (
     <div className="max-w-3xl mx-auto">
       <div className="mt-12 mb-12 ml-2 mr-2">
-        <Article content={articleContent} />
+        <Outlet />
       </div>
     </div>
   );
