@@ -249,7 +249,7 @@ const lambda = new aws.lambda.Function('lambdaFunction', {
 export const lambdaArn = lambda.arn;
 </code></pre>
 
-<p>If you want, you can deploy your lambda function to test it manually.</p>
+<p>If you want, you can deploy your lambda function to test it manually:</p>
 <pre class="copy-to-clipboard"><code class="language-bash">pulumi up</code></pre>
 <p>Once the deployment is done, you can test your lambda function by calling it from the AWS console with the
   following mock payload:</p>
