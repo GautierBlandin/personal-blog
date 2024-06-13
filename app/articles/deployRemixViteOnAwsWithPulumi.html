@@ -365,7 +365,7 @@ export const httpApiEndpoint = pulumi.interpolate`${apigw.apiEndpoint}/${stage.n
   CloudFront distributions are made of two main components: origins, and behaviors.
 </p>
 <p>Origins are the sources of content served by the distribution. In our case, it's going to be the S3 bucket
-that we configure previously, and the API Gateway that links to our lambda function.</p>
+that we configured previously, and the API Gateway that links to our lambda function.</p>
 <p>Behaviors define the rules that apply to the requests coming to the distribution, including routing
 between origins, and caching behavior.</p>
 <br/>
