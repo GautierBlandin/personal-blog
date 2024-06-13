@@ -155,7 +155,7 @@ allow our CloudFront distribution to access the bucket.
   </p><p>We also need to install the @pulumi/synced-folder package
 to automatically sync the build/client directory and the S3 bucket.</p><p> Let's create all of this:</p>
 <pre class="copy-to-clipboard"><code class="language-bash">npm install @pulumi/synced-folder</code></pre>
-<pre class="copy-to-clipboard"><code class="language-typescript">// index.ts
+<pre class="copy-to-clipboard"><code class="language-typescript">// infrastructure/index.ts
 import * as aws from '@pulumi/aws';
 import * as synced from '@pulumi/synced-folder';
 
