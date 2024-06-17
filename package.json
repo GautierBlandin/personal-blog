@@ -4,9 +4,9 @@
   "sideEffects": false,
   "type": "module",
   "scripts": {
-    "build-deploy": "remix vite:build && node build.cjs && cd infrastructure && pulumi up",
+    "build-deploy": "remix vite:build && node build.js && cd infrastructure && pulumi up",
     "build": "remix vite:build && npm run build:lambda",
-    "build:lambda": "node build.cjs",
+    "build:lambda": "node build.js",
     "build:remix": "remix vite:build",
     "deploy": "cd infrastructure && pulumi up",
     "dev": "remix vite:dev",
