@@ -1,4 +1,4 @@
-const esbuild = require('esbuild');
+import esbuild from 'esbuild';
 
 esbuild
   .build({
@@ -11,4 +11,5 @@ esbuild
     sourcemap: true,
     format: 'cjs',
   })
+  // eslint-disable-next-line no-undef
   .catch(() => process.exit(1));
