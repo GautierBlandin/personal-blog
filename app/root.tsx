@@ -18,6 +18,10 @@ export const links: LinksFunction = () => [
     rel: 'stylesheet',
     href: 'https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&display=swap',
   },
+  {
+    rel: 'icon',
+    href: '/favicon.ico',
+  },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
