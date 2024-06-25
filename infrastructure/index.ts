@@ -5,6 +5,8 @@ import * as url from 'url';
 
 const stack = pulumi.getStack();
 const stackConfig = new pulumi.Config();
+const awsConfig = new pulumi.Config('aws');
+const region = awsConfig.require('region');
 const PRODUCTION = 'prod';
 
 const certficateArn = stack === PRODUCTION ? stackConfig.require('certificateArn') : undefined;
@@ -19,17 +21,7 @@ const config = {
   certificateArn: certficateArn,
 };
 
-const bucket = new aws.s3.Bucket('bucket', {
-  corsRules: [
-    {
-      allowedOrigins: ['*'],
-      allowedMethods: ['GET', 'HEAD'],
-      allowedHeaders: [],
-      exposeHeaders: [],
-      maxAgeSeconds: 300,
-    },
-  ],
-});
+const bucket = new aws.s3.Bucket('bucket');
 
 const blockPublicAcls = new aws.s3.BucketPublicAccessBlock('public-access-block', {
   bucket: bucket.bucket,
@@ -215,6 +207,8 @@ function getS3OriginCacheBehavior({ pathPattern }: { pathPattern: string }) {
   };
 }
 
+const s3DomainName = pulumi.interpolate`${bucket.bucket}.s3-${region}.amazonaws.com`;
+
 const distribution = new aws.cloudfront.Distribution('distribution', {
   enabled: true,
   aliases: distributionAliases,
@@ -222,7 +216,7 @@ const distribution = new aws.cloudfront.Distribution('distribution', {
   origins: [
     {
       originId: 'S3Origin',
-      domainName: bucket.bucketDomainName,
+      domainName: s3DomainName,
       originAccessControlId: cloudfrontOAC.id,
     },
     {
