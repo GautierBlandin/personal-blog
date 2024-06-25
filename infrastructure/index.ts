@@ -71,7 +71,7 @@ new aws.iam.RolePolicyAttachment('lambdaRoleAttachment', {
   policyArn: aws.iam.ManagedPolicy.AWSLambdaBasicExecutionRole,
 });
 
-const lambda = new aws.lambda.Function('lambdaFunction', {
+const lambda = new aws.lambda.Function(`server-${stack}-lambdaFunction`, {
   code: new pulumi.asset.AssetArchive({
     '.': new pulumi.asset.FileArchive('../build/lambda'),
   }),
