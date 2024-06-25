@@ -5,15 +5,18 @@ import * as url from 'url';
 
 const stack = pulumi.getStack();
 const stackConfig = new pulumi.Config();
+const PRODUCTION = 'prod';
+
+const certficateArn = stack === PRODUCTION ? stackConfig.require('certificateArn') : undefined;
+const targetDomain = stack === PRODUCTION ? stackConfig.require('targetDomain') : undefined;
 
 const config = {
   // targetDomain is the domain/host to serve content at.
-  targetDomain: stackConfig.require('targetDomain'),
+  targetDomain: targetDomain,
   // If true create an A record for the www subdomain of targetDomain pointing to the generated cloudfront distribution.
   // If a certificate was generated it will support this subdomain.
   // default: true
-  includeWWW: stackConfig.getBoolean('includeWWW') ?? true,
-  certificateArn: stackConfig.require('certificateArn'),
+  certificateArn: certficateArn,
 };
 
 const bucket = new aws.s3.Bucket('bucket', {
@@ -185,10 +188,7 @@ function createWWWAliasRecord(targetDomain: string, distribution: aws.cloudfront
 }
 
 // if config.includeWWW include an alias for the www subdomain
-const distributionAliases = config.includeWWW
-  ? [config.targetDomain, `www.${config.targetDomain}`]
-  : [config.targetDomain];
-
+const distributionAliases = stack === PRODUCTION ? [config.targetDomain!, `www.${config.targetDomain!}`] : undefined;
 /*
  * CloudFront configuration
  */
@@ -209,7 +209,7 @@ function getS3OriginCacheBehavior({ pathPattern }: { pathPattern: string }) {
     allowedMethods: ['GET', 'HEAD'],
     cachedMethods: ['GET', 'HEAD'],
     compress: true,
-    cachePolicyId: cachingOptimizedPolicyId,
+    cachePolicyId: stack === PRODUCTION ? cachingOptimizedPolicyId : cachingDisabledPolicyId,
     targetOriginId: 'S3Origin',
     viewerProtocolPolicy: 'redirect-to-https',
   };
@@ -257,10 +257,15 @@ const distribution = new aws.cloudfront.Distribution('distribution', {
       restrictionType: 'none',
     },
   },
-  viewerCertificate: {
-    acmCertificateArn: config.certificateArn, // Per AWS, ACM certificate must be in the us-east-1 region.
-    sslSupportMethod: 'sni-only',
-  },
+  viewerCertificate:
+    stack === PRODUCTION
+      ? {
+          acmCertificateArn: config.certificateArn, // Per AWS, ACM certificate must be in the us-east-1 region.
+          sslSupportMethod: 'sni-only',
+        }
+      : {
+          cloudfrontDefaultCertificate: true,
+        },
 });
 
 new aws.s3.BucketPolicy('allowCloudFrontBucketPolicy', {
@@ -288,7 +293,7 @@ new aws.s3.BucketPolicy('allowCloudFrontBucketPolicy', {
 
 export const distributionAddress = pulumi.interpolate`https://${distribution.domainName}`;
 
-createAliasRecord(config.targetDomain, distribution);
-if (config.includeWWW) {
-  createWWWAliasRecord(config.targetDomain, distribution);
+if (stack === PRODUCTION) {
+  createAliasRecord(config.targetDomain!, distribution);
+  createWWWAliasRecord(config.targetDomain!, distribution);
 }
