@@ -6,10 +6,18 @@ const requestHandler = createRequestHandler({
   build,
 });
 
+const prefixesToRemove = ['/dev', '/prod'];
+
 export const handler = (...args: Parameters<APIGatewayProxyHandlerV2>) => {
   const [apiGatewayEvent, ...rest] = args;
-  apiGatewayEvent.rawPath = apiGatewayEvent.rawPath.replace(/^\/dev/, '');
-  apiGatewayEvent.requestContext.http.path = apiGatewayEvent.requestContext.http.path.replace(/^\/dev/, '');
+
+  prefixesToRemove.forEach((prefix) => {
+    apiGatewayEvent.rawPath = apiGatewayEvent.rawPath.replace(new RegExp(`^${prefix}`), '');
+    apiGatewayEvent.requestContext.http.path = apiGatewayEvent.requestContext.http.path.replace(
+      new RegExp(`^${prefix}`),
+      '',
+    );
+  });
 
   return requestHandler(apiGatewayEvent, ...rest);
 };
