@@ -21,27 +21,11 @@ const config = {
 
 const bucket = new aws.s3.Bucket('bucket');
 
-const blockPublicAcls = new aws.s3.BucketPublicAccessBlock('public-access-block', {
-  bucket: bucket.bucket,
-  blockPublicAcls: false,
+new synced.S3BucketFolder('synced-folder', {
+  path: '../build/client',
+  bucketName: bucket.bucket,
+  acl: 'private',
 });
-
-const ownershipControls = new aws.s3.BucketOwnershipControls('ownership-controls', {
-  bucket: bucket.bucket,
-  rule: {
-    objectOwnership: 'ObjectWriter',
-  },
-});
-
-new synced.S3BucketFolder(
-  'synced-folder',
-  {
-    path: '../build/client',
-    bucketName: bucket.bucket,
-    acl: 'public-read',
-  },
-  { dependsOn: [ownershipControls, blockPublicAcls] },
-);
 
 const lambdaRole = new aws.iam.Role('lambdaRole', {
   assumeRolePolicy: {
