@@ -165,31 +165,7 @@ to automatically sync the build/client directory and the S3 bucket.</p><p> Let's
 import * as aws from '@pulumi/aws';
 import * as synced from '@pulumi/synced-folder';
 
-export const bucket = new aws.s3.Bucket('bucket', {
-  corsRules: [
-    {
-      allowedOrigins: ['*'],
-      allowedMethods: ['GET', 'HEAD'],
-      allowedHeaders: [],
-      exposeHeaders: [],
-      maxAgeSeconds: 300,
-    },
-  ],
-});
-
-// Disable block all public access
-const blockPublicAcls = new aws.s3.BucketPublicAccessBlock('public-access-block', {
-  bucket: bucket.bucket,
-  blockPublicAcls: false,
-});
-
-// Needed to allow public-read ACL on the objects
-const ownershipControls = new aws.s3.BucketOwnershipControls('ownership-controls', {
-  bucket: bucket.bucket,
-  rule: {
-    objectOwnership: 'ObjectWriter',
-  },
-});
+export const bucket = new aws.s3.Bucket('bucket');
 
 // Automatically sync the client directory to the S3 bucket
 new synced.S3BucketFolder(
@@ -197,9 +173,8 @@ new synced.S3BucketFolder(
   {
     path: '../build/client',
     bucketName: bucket.bucket,
-    acl: 'public-read',
+    acl: 'private',
   },
-  { dependsOn: [ownershipControls, blockPublicAcls] },
 );
 </code></pre>
 <p>Now, let's deploy our infrastructure:</p>
@@ -408,7 +383,7 @@ const distribution = new aws.cloudfront.Distribution('distribution', {
   origins: [
     {
       originId: 'S3Origin',
-      domainName: bucket.bucketDomainName,
+      domainName: bucket.bucketRegionalDomainName,
       originAccessControlId: cloudfrontOAC.id,
     },
     {
