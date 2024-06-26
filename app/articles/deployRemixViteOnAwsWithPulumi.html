@@ -156,8 +156,7 @@ pulumi config set aws:secretKey &lt;your-secret-key&gt; --secret</code></pre>
 <hr/>
 <h3>Creating an S3 bucket for the static assets</h3>
 <br/>
-<p>The first thing we need is an S3 bucket for our static assets. It will need public ACLs and CORS rules to
-allow our CloudFront distribution to access the bucket.
+<p>The first thing we need is an S3 bucket for our static assets.
   </p><p>We also need to install the @pulumi/synced-folder package
 to automatically sync the build/client directory and the S3 bucket.</p><p> Let's create all of this:</p>
 <pre class="copy-to-clipboard"><code class="language-bash">npm install @pulumi/synced-folder</code></pre>
