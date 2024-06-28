@@ -7,7 +7,7 @@ const stack = pulumi.getStack();
 const stackConfig = new pulumi.Config();
 const PRODUCTION = 'prod';
 
-const certficateArn = stack === PRODUCTION ? stackConfig.require('certificateArn') : undefined;
+const certificateArn = stack === PRODUCTION ? stackConfig.require('certificateArn') : undefined;
 const targetDomain = stack === PRODUCTION ? stackConfig.require('targetDomain') : undefined;
 
 const config = {
@@ -16,7 +16,7 @@ const config = {
   // If true create an A record for the www subdomain of targetDomain pointing to the generated cloudfront distribution.
   // If a certificate was generated it will support this subdomain.
   // default: true
-  certificateArn: certficateArn,
+  certificateArn: certificateArn,
 };
 
 const bucket = new aws.s3.Bucket('bucket');
